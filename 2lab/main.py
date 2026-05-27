@@ -53,8 +53,7 @@ def polygons_intersect(poly1: Polygon, poly2: Polygon) -> bool:
         if point_inside_polygon(p, poly1): return True
     return False
 
-
-# пункт 2
+#пункт 2
 def gen_rectangle(width: float = 1.0, height: float = 0.6, gap: float = 0.2) -> Iterator[Polygon]:
     return map(lambda i: ((i * (width + gap), 0), 
                           (i * (width + gap) + width, 0), 
@@ -131,6 +130,10 @@ def agr_perimeter(polygons: Iterator[Polygon]) -> float:
 def agr_area(polygons: Iterator[Polygon]) -> float:
     return reduce(lambda a, b: a + b, map(polygon_area, polygons), 0.0)
 
+#пункт 9
+def zip_polygons(*iterators: Iterator[Polygon]) -> Iterator[Polygon]:
+    """Склеивает полигоны из переданных итераторов в один многоугольник"""
+    return map(lambda polys: tuple(pt for poly in polys for pt in poly), zip(*iterators))
 
 def draw_polygons(ax, polygons, title="", facecolor='none', edgecolor='black', fill_alpha=1.0):
     for poly in polygons:
@@ -158,6 +161,7 @@ def demo_generators():
         ax.autoscale()
     plt.tight_layout()
     plt.show()
+
 #пункт 4
 def demo_transformations():
     print("\n[Пункт 4] Визуализация трансформаций...")
@@ -254,11 +258,41 @@ def demo_scenario_filters():
         
     plt.tight_layout()
     plt.show()
+
+#пункт 9
+def demo_zip_polygons():
+    print("\n[Пункт 9] Склейка полигонов (zip_polygons)...")
+    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+   
+    def gen_top_tris():
+        return map(lambda i: ((i*1.5, 0.1), (i*1.5 + 0.5, 1.1), (i*1.5 + 1.0, 0.1)), it.count())
+    
+    def gen_bot_tris():
+        return map(lambda i: ((i*1.5 + 1.0, -0.1), (i*1.5 + 0.5, -1.1), (i*1.5, -0.1)), it.count())
+    
+    top_tris = list(it.islice(gen_top_tris(), 6))
+    bot_tris = list(it.islice(gen_bot_tris(), 6))
+
+    draw_polygons(axs[0], top_tris, "Исходные последовательности (до склейки)", edgecolor='blue')
+    draw_polygons(axs[0], bot_tris, "Исходные последовательности (до склейки)", edgecolor='green')
+  
+    zipped = list(it.islice(zip_polygons(gen_top_tris(), gen_bot_tris()), 6))
+    draw_polygons(axs[1], zipped, "Результат склейки", edgecolor='black', facecolor='lightgray', fill_alpha=0.7)
+    
+    for ax in axs:
+        ax.axhline(0, color='gray', linewidth=0.5)
+        ax.axvline(0, color='gray', linewidth=0.5)
+        ax.autoscale()
+        
+    plt.tight_layout()
+    plt.show()
+
 #главное меню
 def main_menu():
     polygons = []
     
     while True:
+        print("\n" + "="*50)
         print("МЕНЮ")
         print("1. Добавить полигон")
         print("2. Показать текущие полигоны")
@@ -267,6 +301,7 @@ def main_menu():
         print("5. Пункт 2: Генераторы бесконечных последовательностей")
         print("6. Пункт 4: Визуализация трансформаций")
         print("7. Пункт 6: Сценарии фильтров")
+        print("8. Пункт 9: Склейка полигонов (zip_polygons)")
         print("0. Выход")
         
         choice = input("Выберите пункт: ").strip()
@@ -308,6 +343,8 @@ def main_menu():
             demo_transformations()
         elif choice == '7':
             demo_scenario_filters()
+        elif choice == '8':
+            demo_zip_polygons()
         elif choice == '0':
             break
         else:
