@@ -1,3 +1,4 @@
+#основной код + доп задания 1, 2, 5
 import math
 import matplotlib.pyplot as plt
 from functools import reduce
